@@ -1,0 +1,118 @@
+#+title:Generic IDE tooling initiative
+
+* About
+
+A lot of functional languages (Haskell, Elm, Idris, PureScript, Frege, Scala) have or need tooling that does basically the same thing.
+with perhaps only small language-specific variations. Yet, their toolchains
+don't seem to have anything in common. This seems like a massive waste of effort
+and potential.
+
+* Idris
+
+- Idris [[http://docs.idris-lang.org/en/latest/reference/ide-protocol.html][IDE protocol]]
+- protocol provides inspiration to [[https://github.com/haskell/haskell-ide][haskell-ide]].
+- David Christiansen ([[https://github.com/david-christiansen][github]]) is involved with both Idris tooling and [[https://github.com/haskell/haskell-ide][haskell-ide]].
+
+* Haskell
+
+- [[https://github.com/haskell/haskell-ide][haskell-ide]]
+- Hoogle
+
+* PureScript
+
+- [[https://github.com/kRITZCREEK/psc-ide/][psc-ide]]
+  - protocol design discussion
+- [[http://pursuit.purescript.org/][Pursuit]] is Basically Hoogle for PureSCript, based on actual Hoogle code: [[https://github.com/purescript/pursuit][purescript/pursuit]]
+- [[https://github.com/epost/psc-query][epost/psc-query]]: query PureScript code using datalog, prolog, etc.
+
+** Ecosystem diagram
+
+#+begin_src dot :file img/ps-tooling-1.svg :cmdline -Kdot -Tsvg
+digraph G {
+  pulp, psc, psc_make, psc_ide, psc_docs, psc_publish, psc_bundle, psci [shape=box, style=filled, fillcolor="/rdbu11/5"]
+  bower, browserify [shape=box, style=filled, fillcolor="/rdbu11/8"]
+
+  psc_publish [label="psc-publish"]
+  psc_docs    [label="psc-docs"]
+  psc_bundle  [label="psc-bundle"]
+  psc_make    [label="psc-make"]
+
+  subgraph cluster_input {
+    label="MyProject input files"
+    purs       [label="src/MyModule.purs"]
+    bower_json [label="bower.json"]
+  }
+
+  subgraph cluster_web {
+    label="Web"
+    pursuit [label="Pursuit"]
+  }
+
+  
+  subgraph cluster_editors {
+    label="editors"
+    emacs, vim, atom, intellij [shape=box, style=filled, fillcolor="/rdbu11/4"]
+
+  }
+
+  subgraph cluster_build_level {
+    label="build-level tools"
+    pulp
+    psc_publish, psc_docs, psci
+    bower, browserify
+
+    subgraph cluster_build {
+      label="build tools"
+      psc, psc_make, psc_bundle
+    }
+  }
+
+
+  psc_ide    [label="psc-ide"]
+  emacs, atom -> psc_ide [style="dashed"]
+
+  js2, externs_purs -> psc_ide [label="read_by"]
+  purs              -> psc_ide [label="read_by"]
+  pursuit           -> psc_ide [label="read_by"]
+
+
+
+  externs_purs [label="MyModule/externs.purs"]
+  js2         [label="MyModule.js"]
+  module_docs [label="MyModule.md"]
+  js_bundle [label="MyProject.bundle.js"]
+
+  ETAGS -> emacs [label="read_by"]
+
+
+  purs -> psc_publish [label="read_by"]
+
+
+  purs -> psc
+  purs -> psc_make -> js2, externs_purs [label="gen"]
+  bower_json -> bower
+  browserify -> js_bundle [label="gen"]
+  psc_ide -> completions, type_info  [label="gen"]
+  psc_publish -> pursuit_json_docs [label="gen"]
+  purs -> psc_docs  [label="read_by"]
+  psc_docs -> module_docs, TAGS, ETAGS [label="gen"]
+  pulp -> bower, browserify, psc, psc_make, psc_docs [style="dashed"] 
+  psc_bundle
+}
+#+end_src
+
+* Elm
+
+- [[https://github.com/ElmCast/elm-oracle][elm-oracle]]: query for information about values in elm source files.
+
+
+* Related work
+
+- language-specific editor support not mentioned above:
+  - [[https://github.com/ensime][ensime]] (Scala)
+  - [[https://opam.ocaml.org/blog/turn-your-editor-into-an-ocaml-ide/][OCaml tooling]] (OCaml)
+- [[http://www.rascal-mpl.org/][Rascal]] metaprogramming language
+- [[https://bitbucket.org/inkytonik/monto][Monto]] language-generic editor support
+- [[https://github.com/cwi-swat/meta-environment/tree/master/toolbus-ng][Toolbus NG]] tool communication infrastructure based on ACP process algebra
+- [[https://github.com/edwinb/protocols][edwinb/protocols]]: An Idris DSL for describing and implementing communication protocols
+
